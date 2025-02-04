@@ -3,6 +3,7 @@ import {
   signUpWithPasskeys,
   signUpWithPassword,
   signInWithSavedCredentials,
+  signInWithGoogle,
 } from 'react-native-credentials-manager';
 
 const requestJson = {
@@ -80,6 +81,29 @@ export default function App() {
                 password: credential.password,
               });
             }
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+
+      <Button
+        title="Signin With Google"
+        onPress={async () => {
+          try {
+            const credential = await signInWithGoogle();
+            if (credential.type === 'google-signin') {
+              console.log('Google credentials:', {
+                id: credential.id,
+                idToken: credential.idToken,
+                displayName: credential.displayName,
+                familyName: credential.familyName,
+                givenName: credential.givenName,
+                profilePicture: credential.profilePicture,
+                phoneNumber: credential.phoneNumber,
+              });
+            }
+            return;
           } catch (e) {
             console.error(e);
           }

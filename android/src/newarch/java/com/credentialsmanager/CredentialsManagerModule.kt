@@ -1,6 +1,8 @@
 package com.credentialsmanager
-import androidx.credentials.CredentialManager
+import android.util.Log
 import androidx.credentials.exceptions.CreateCredentialException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import com.credentialsmanager.handlers.CredentialHandler
 import com.credentialsmanager.handlers.ErrorHandler
 import com.facebook.react.bridge.Promise
@@ -14,7 +16,6 @@ class CredentialsManagerModule(
   reactContext: ReactApplicationContext,
 ) : NativeCredentialsManagerSpec(reactContext) {
   private val coroutineScope = CoroutineScope(Dispatchers.IO)
-  val credentialManager = CredentialManager.create(getReactApplicationContext())
   private val credentialHandler = CredentialHandler(reactContext)
 
   private var implementation: CredentialsManagerModuleImpl = CredentialsManagerModuleImpl()
@@ -66,6 +67,38 @@ class CredentialsManagerModule(
     coroutineScope.launch {
       val data = credentialHandler.getSavedCredentials(jsonString)
       promise.resolve(data)
+    }
+  }
+
+  override fun signInWithGoogle(promise: Promise) {
+    val googleIdOption = credentialHandler.getGoogleId(true)
+    coroutineScope.launch {
+      try {
+        val result = credentialHandler.googleSignInRequest(googleIdOption)
+        val data = credentialHandler.handleSignInResult(result)
+        promise.resolve(data)
+      } catch (e: GetCredentialException) {
+        when (e) {
+          is NoCredentialException -> {
+            try {
+              Log.d("CredentialManager", "NoCredentialException")
+              val googleIdOption = credentialHandler.getGoogleId(false)
+              val result = credentialHandler.googleSignInRequest(googleIdOption)
+              val data = credentialHandler.handleSignInResult(result)
+              promise.resolve(data)
+            } catch (e: GetCredentialException) {
+              ErrorHandler.handleGetCredentialError(e)
+              Log.e("CredentialManager", "Error during sign in", e)
+              promise.reject("ERROR", e.message.toString())
+            }
+          }
+          else -> {
+            ErrorHandler.handleGetCredentialError(e)
+            Log.e("CredentialManager", "Error during sign in", e)
+            promise.reject("ERROR", e.message.toString())
+          }
+        }
+      }
     }
   }
 }

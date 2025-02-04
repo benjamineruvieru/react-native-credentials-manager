@@ -11,6 +11,17 @@ type PasskeyCredential = {
   authenticationResponseJson: string;
 };
 
+export type GoogleCredential = {
+  type: 'google-signin';
+  id: string;
+  idToken: string;
+  displayName?: string;
+  familyName?: string;
+  givenName?: string;
+  profilePicture?: string;
+  phoneNumber?: string;
+};
+
 type PasswordCredential = {
   type: 'password';
   username: string;
@@ -27,6 +38,7 @@ export interface Spec extends TurboModule {
   signUpWithPassword(credObject: CredObject): void;
 
   signInWithSavedCredentials(requestJson: Object): Promise<Credential>;
+  signInWithGoogle(): Promise<GoogleCredential>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('CredentialsManager');

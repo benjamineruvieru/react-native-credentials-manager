@@ -1,5 +1,5 @@
 import CredentialsManager from './NativeCredentialsManager';
-import type { Credential } from './NativeCredentialsManager';
+import type { Credential, GoogleCredential } from './NativeCredentialsManager';
 
 export function signUpWithPasskeys(
   requestJson: Object,
@@ -25,4 +25,8 @@ export function signInWithSavedCredentials(
   requestJson: Object
 ): Promise<Credential> {
   return CredentialsManager.signInWithSavedCredentials(requestJson);
+}
+
+export function signInWithGoogle(): Promise<GoogleCredential> {
+  return CredentialsManager.signInWithGoogle();
 }
