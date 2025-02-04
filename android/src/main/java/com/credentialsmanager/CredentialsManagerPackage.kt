@@ -12,7 +12,7 @@ class CredentialsManagerPackage : BaseReactPackage() {
     name: String,
     reactContext: ReactApplicationContext,
   ): NativeModule? =
-    if (name == CredentialsManagerModule.NAME) {
+    if (name == CredentialsManagerModuleImpl.NAME) {
       CredentialsManagerModule(reactContext)
     } else {
       null
@@ -21,14 +21,15 @@ class CredentialsManagerPackage : BaseReactPackage() {
   override fun getReactModuleInfoProvider(): ReactModuleInfoProvider =
     ReactModuleInfoProvider {
       val moduleInfos: MutableMap<String, ReactModuleInfo> = HashMap()
-      moduleInfos[CredentialsManagerModule.NAME] =
+      val isTurboModule = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
+      moduleInfos[CredentialsManagerModuleImpl.NAME] =
         ReactModuleInfo(
-          CredentialsManagerModule.NAME,
-          CredentialsManagerModule.NAME,
+          CredentialsManagerModuleImpl.NAME,
+          CredentialsManagerModuleImpl.NAME,
           false, // canOverrideExistingModule
           false, // needsEagerInit
           false, // isCxxModule
-          true, // isTurboModule
+          isTurboModule, // isTurboModule
         )
       moduleInfos
     }
