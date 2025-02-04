@@ -1,6 +1,6 @@
 # react-native-credentials-manager
 
-A React Native library that implements the [Credential Manager API](https://developer.android.com/training/sign-in/credential-manager) for Android. This library allows you to manage passwords and passkeys in your React Native applications.
+A React Native library that implements the [Credential Manager API](https://developer.android.com/identity/sign-in/credential-manager) for Android. This library allows you to manage passwords and passkeys in your React Native applications.
 
 > ⚠️ **Note**: This library is actively under development. iOS support using Authentication Services is coming soon. Support for the old React Native architecture is also in progress. Google Sign-In integration with Credential Manager will be added shortly.
 
