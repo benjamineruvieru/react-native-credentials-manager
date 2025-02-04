@@ -1,5 +1,28 @@
 import CredentialsManager from './NativeCredentialsManager';
+import type { Credential } from './NativeCredentialsManager';
 
-export function multiply(a: number, b: number): number {
-  return CredentialsManager.multiply(a, b);
+export function signUpWithPasskeys(
+  requestJson: Object,
+  preferImmediatelyAvailableCredentials: boolean = false
+): Promise<Object> {
+  return CredentialsManager.signUpWithPasskeys(
+    requestJson,
+    preferImmediatelyAvailableCredentials
+  );
+}
+
+export function signUpWithPassword({
+  username,
+  password,
+}: {
+  username: string;
+  password: string;
+}) {
+  CredentialsManager.signUpWithPassword({ password, username });
+}
+
+export function signInWithSavedCredentials(
+  requestJson: Object
+): Promise<Credential> {
+  return CredentialsManager.signInWithSavedCredentials(requestJson);
 }

@@ -8,26 +8,28 @@ import com.facebook.react.module.model.ReactModuleInfoProvider
 import java.util.HashMap
 
 class CredentialsManagerPackage : BaseReactPackage() {
-  override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
-    return if (name == CredentialsManagerModule.NAME) {
+  override fun getModule(
+    name: String,
+    reactContext: ReactApplicationContext,
+  ): NativeModule? =
+    if (name == CredentialsManagerModule.NAME) {
       CredentialsManagerModule(reactContext)
     } else {
       null
     }
-  }
 
-  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
-    return ReactModuleInfoProvider {
+  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider =
+    ReactModuleInfoProvider {
       val moduleInfos: MutableMap<String, ReactModuleInfo> = HashMap()
-      moduleInfos[CredentialsManagerModule.NAME] = ReactModuleInfo(
-        CredentialsManagerModule.NAME,
-        CredentialsManagerModule.NAME,
-        false,  // canOverrideExistingModule
-        false,  // needsEagerInit
-        false,  // isCxxModule
-        true // isTurboModule
-      )
+      moduleInfos[CredentialsManagerModule.NAME] =
+        ReactModuleInfo(
+          CredentialsManagerModule.NAME,
+          CredentialsManagerModule.NAME,
+          false, // canOverrideExistingModule
+          false, // needsEagerInit
+          false, // isCxxModule
+          true, // isTurboModule
+        )
       moduleInfos
     }
-  }
 }

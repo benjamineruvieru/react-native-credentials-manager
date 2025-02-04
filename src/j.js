@@ -1,20 +1,21 @@
+// @flow
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 type CredObject = {
-  username: string;
-  password: string;
+  username: string,
+  password: string,
 };
 
 type PasskeyCredential = {
-  type: 'passkey';
-  authenticationResponseJson: string;
+  type: 'passkey',
+  authenticationResponseJson: string,
 };
 
 type PasswordCredential = {
-  type: 'password';
-  username: string;
-  password: string;
+  type: 'password',
+  username: string,
+  password: string,
 };
 
 export type Credential = PasskeyCredential | PasswordCredential;
