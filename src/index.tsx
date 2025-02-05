@@ -27,6 +27,18 @@ export function signInWithSavedCredentials(
   return CredentialsManager.signInWithSavedCredentials(requestJson);
 }
 
-export function signInWithGoogle(): Promise<GoogleCredential> {
-  return CredentialsManager.signInWithGoogle();
+export function signInWithGoogle(params: {
+  nonce?: string;
+  serverClientId: string;
+  autoSelectEnabled?: boolean;
+}): Promise<GoogleCredential> {
+  return CredentialsManager.signInWithGoogle({
+    ...params,
+    nonce: params.nonce ?? '',
+    autoSelectEnabled: params.autoSelectEnabled ?? true,
+  });
+}
+
+export function signOut(): Promise<null> {
+  return CredentialsManager.signOut();
 }

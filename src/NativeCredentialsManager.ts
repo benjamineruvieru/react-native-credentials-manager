@@ -38,7 +38,12 @@ export interface Spec extends TurboModule {
   signUpWithPassword(credObject: CredObject): void;
 
   signInWithSavedCredentials(requestJson: Object): Promise<Credential>;
-  signInWithGoogle(): Promise<GoogleCredential>;
+  signInWithGoogle(params: {
+    nonce: string;
+    serverClientId: string;
+    autoSelectEnabled: boolean;
+  }): Promise<GoogleCredential>;
+  signOut(): Promise<null>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('CredentialsManager');

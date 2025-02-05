@@ -4,7 +4,9 @@ import {
   signUpWithPassword,
   signInWithSavedCredentials,
   signInWithGoogle,
+  signOut,
 } from 'react-native-credentials-manager';
+const WEB_CLIENT_ID = process.env.WEB_CLIENT_ID || '';
 
 const requestJson = {
   challenge: 'c29tZS1yYW5kb20tY2hhbGxlbmdl',
@@ -91,7 +93,10 @@ export default function App() {
         title="Signin With Google"
         onPress={async () => {
           try {
-            const credential = await signInWithGoogle();
+            const credential = await signInWithGoogle({
+              serverClientId: WEB_CLIENT_ID,
+              autoSelectEnabled: true,
+            });
             if (credential.type === 'google-signin') {
               console.log('Google credentials:', {
                 id: credential.id,
@@ -103,6 +108,16 @@ export default function App() {
                 phoneNumber: credential.phoneNumber,
               });
             }
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+      <Button
+        title="Signout"
+        onPress={async () => {
+          try {
+            await signOut();
           } catch (e) {
             console.error(e);
           }

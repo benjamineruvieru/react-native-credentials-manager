@@ -74,8 +74,21 @@ class CredentialsManagerModule(
   }
 
   @ReactMethod
-  fun signInWithGoogle(promise: Promise) {
-    val googleIdOption = credentialHandler.getGoogleId(true)
+  fun signInWithGoogle(
+    requestObject: ReadableMap,
+    promise: Promise,
+  ) {
+    val nonce = requestObject.getString("nonce") ?: ""
+    val serverClientId = requestObject.getString("serverClientId") ?: ""
+    val autoSelectEnabled = requestObject.getBoolean("autoSelectEnabled")
+
+    val googleIdOption =
+      credentialHandler.getGoogleId(
+        setFilterByAuthorizedAccounts = false,
+        nonce = nonce,
+        serverClientId = serverClientId,
+        autoSelectEnabled = autoSelectEnabled,
+      )
     coroutineScope.launch {
       try {
         val result = credentialHandler.googleSignInRequest(googleIdOption)
@@ -86,7 +99,13 @@ class CredentialsManagerModule(
           is NoCredentialException -> {
             try {
               Log.d("CredentialManager", "NoCredentialException")
-              val googleIdOption = credentialHandler.getGoogleId(false)
+              val googleIdOption =
+                credentialHandler.getGoogleId(
+                  setFilterByAuthorizedAccounts = false,
+                  nonce = nonce,
+                  serverClientId = serverClientId,
+                  autoSelectEnabled = autoSelectEnabled,
+                )
               val result = credentialHandler.googleSignInRequest(googleIdOption)
               val data = credentialHandler.handleSignInResult(result)
               promise.resolve(data)

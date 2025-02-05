@@ -19,12 +19,18 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import org.json.JSONObject
+import androidx.credentials.ClearCredentialStateRequest
 
 class CredentialHandler(
   private val context: Context,
 ) {
   private val credentialManager = CredentialManager.create(context)
 
+  suspend fun signOut(){
+
+    credentialManager.clearCredentialState(ClearCredentialStateRequest())
+
+  }
   suspend fun createPasskey(
     jsonString: String,
     preferImmediatelyAvailableCredentials: Boolean,
@@ -136,14 +142,23 @@ class CredentialHandler(
     }
   }
 
-  fun getGoogleId(setFilterByAuthorizedAccounts: Boolean): GetGoogleIdOption =
-    GetGoogleIdOption
+  fun getGoogleId(
+    setFilterByAuthorizedAccounts: Boolean,
+    nonce: String,
+    serverClientId: String,
+    autoSelectEnabled: Boolean,
+  ): GetGoogleIdOption {
+    Log.d("CredentialManager", "getGoogleId - setFilterByAuthorizedAccounts: $setFilterByAuthorizedAccounts")
+
+    return GetGoogleIdOption
       .Builder()
       .setFilterByAuthorizedAccounts(setFilterByAuthorizedAccounts)
-      .setServerClientId("597456709582-41e3autinop1qv0t2eo0admdobo50dkv.apps.googleusercontent.com")
-      .setAutoSelectEnabled(true)
-      .setNonce("nonce")
+      .setServerClientId(serverClientId)
+      .setAutoSelectEnabled(autoSelectEnabled)
+      .setNonce(nonce)
       .build()
+  }
+
 
   suspend fun googleSignInRequest(googleIdOption: GetGoogleIdOption): GetCredentialResponse {
     val request: GetCredentialRequest =

@@ -11,6 +11,7 @@ import com.facebook.react.bridge.ReadableMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.credentials.exceptions.ClearCredentialException
 
 class CredentialsManagerModule(
   reactContext: ReactApplicationContext,
@@ -70,8 +71,35 @@ class CredentialsManagerModule(
     }
   }
 
-  override fun signInWithGoogle(promise: Promise) {
-    val googleIdOption = credentialHandler.getGoogleId(true)
+  override fun signOut(
+    promise: Promise,
+  ) {
+    coroutineScope.launch {
+      try {
+        credentialHandler.signOut()
+        promise.resolve(null)}
+        catch (e: ClearCredentialException) {
+          Log.e("CredentialManager", "Error during sign out", e)
+          promise.reject("ERROR", e.message.toString())
+        }
+      }
+  }
+
+  override fun signInWithGoogle(
+    requestObject: ReadableMap,
+    promise: Promise,
+  ) {
+    val nonce = requestObject.getString("nonce") ?: ""
+    val serverClientId = requestObject.getString("serverClientId") ?: ""
+    val autoSelectEnabled = requestObject.getBoolean("autoSelectEnabled")
+
+    val googleIdOption =
+      credentialHandler.getGoogleId(
+        setFilterByAuthorizedAccounts = true,
+        nonce = nonce,
+        serverClientId = serverClientId,
+        autoSelectEnabled = autoSelectEnabled,
+      )
     coroutineScope.launch {
       try {
         val result = credentialHandler.googleSignInRequest(googleIdOption)
@@ -82,14 +110,20 @@ class CredentialsManagerModule(
           is NoCredentialException -> {
             try {
               Log.d("CredentialManager", "NoCredentialException")
-              val googleIdOption = credentialHandler.getGoogleId(false)
-              val result = credentialHandler.googleSignInRequest(googleIdOption)
-              val data = credentialHandler.handleSignInResult(result)
-              promise.resolve(data)
-            } catch (e: GetCredentialException) {
-              ErrorHandler.handleGetCredentialError(e)
-              Log.e("CredentialManager", "Error during sign in", e)
-              promise.reject("ERROR", e.message.toString())
+              val googleIdOption2 =
+                credentialHandler.getGoogleId(
+                  setFilterByAuthorizedAccounts = false,
+                  nonce = nonce,
+                  serverClientId = serverClientId,
+                  autoSelectEnabled = autoSelectEnabled,
+                )
+              val result2 = credentialHandler.googleSignInRequest(googleIdOption2)
+              val data2 = credentialHandler.handleSignInResult(result2)
+              promise.resolve(data2)
+            } catch (e2: GetCredentialException) {
+              ErrorHandler.handleGetCredentialError(e2)
+              Log.e("CredentialManager", "Error during sign in", e2)
+              promise.reject("ERROR", e2.message.toString())
             }
           }
           else -> {
