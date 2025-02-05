@@ -1,6 +1,6 @@
 {
   "name": "react-native-credentials-manager",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A React Native library that implements the Credential Manager API for Android. This library allows you to manage passwords and passkeys in your React Native applications.",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
