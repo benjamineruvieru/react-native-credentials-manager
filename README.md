@@ -1,14 +1,16 @@
 # react-native-credentials-manager
 
+> 📚 **Documentation has moved!** The complete documentation is now available at [https://docs.benjamineruvieru.com/docs/react-native-credentials-manager/](https://docs.benjamineruvieru.com/docs/react-native-credentials-manager/)
+
 A React Native library that implements the [Credential Manager API](https://developer.android.com/identity/sign-in/credential-manager) for Android. This library allows you to manage passwords and passkeys in your React Native applications.
 
-> ⚠️ **Note**: This library is actively under development. iOS support using Authentication Services is coming soon. ~~Support for the old React Native architecture is also in progress.~~ Supports old architecture now. Google Sign-In integration with Credential Manager will be added shortly.
+> ⚠️ **Note**: This library is actively under development. iOS support using Authentication Services is coming soon. ~~Support for the old React Native architecture is also in progress.~~ Supports old architecture now. ~~Google Sign-In integration with Credential Manager will be added shortly.~~ Google Sign-In is now supported.
 
 ## Features
 
 - ✨ Passkey Authentication
 - 🔐 Password Credential Management
-- 📱 Google Signing (coming soon)
+- 📱 Google Signing
 - 🤖 [iOS Authentication Services](https://developer.apple.com/documentation/authenticationservices?language=objc) (coming soon)
 
 ## Installation
@@ -222,6 +224,66 @@ try {
   }
 } catch (error) {
   console.error('Sign in failed:', error);
+}
+```
+
+### [Google Sign-In](https://developer.android.com/identity/sign-in/credential-manager-siwg#instantiate-google)
+
+**Function**: `signInWithGoogle(params)`
+
+**Description**: Authenticates users using Google Sign-In through the Credential Manager.
+
+**Parameters**:
+
+| Parameter           | Type      | Description                                                                 |
+| ------------------- | --------- | --------------------------------------------------------------------------- |
+| `serverClientId`    | `string`  | Your application's web client ID from the Google Cloud Console              |
+| `nonce`             | `string?` | Optional nonce for additional security                                      |
+| `autoSelectEnabled` | `boolean` | Whether to automatically select the Google account if only one is available |
+
+**Example**:
+
+```typescript
+import { signInWithGoogle } from 'react-native-credentials-manager';
+
+try {
+  const credential = await signInWithGoogle({
+    serverClientId: 'YOUR_WEB_CLIENT_ID',
+    autoSelectEnabled: true,
+  });
+
+  if (credential.type === 'google-signin') {
+    console.log('Google credentials:', {
+      id: credential.id,
+      idToken: credential.idToken,
+      displayName: credential.displayName,
+      familyName: credential.familyName,
+      givenName: credential.givenName,
+      profilePicture: credential.profilePicture,
+      phoneNumber: credential.phoneNumber,
+    });
+  }
+} catch (error) {
+  console.error('Google Sign-In failed:', error);
+}
+```
+
+### Sign Out
+
+Function : signOut()
+
+Description : Signs out the current user and clears credentials.
+
+Example :
+
+```typescript
+import { signOut } from 'react-native-credentials-manager';
+
+try {
+  await signOut();
+  console.log('Successfully signed out');
+} catch (error) {
+  console.error('Sign out failed:', error);
 }
 ```
 
