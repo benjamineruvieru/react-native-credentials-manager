@@ -73,6 +73,22 @@ class CredentialsManagerModule(
     }
   }
 
+
+  @ReactMethod
+  fun signOut(
+    promise: Promise,
+  ) {
+    coroutineScope.launch {
+      try {
+        credentialHandler.signOut()
+        promise.resolve(null)}
+        catch (e: ClearCredentialException) {
+          Log.e("CredentialManager", "Error during sign out", e)
+          promise.reject("ERROR", e.message.toString())
+        }
+      }
+  }
+
   @ReactMethod
   fun signInWithGoogle(
     requestObject: ReadableMap,
