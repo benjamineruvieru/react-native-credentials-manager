@@ -48,7 +48,18 @@
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "passkeys",
+    "webauthn",
+    "authentication",
+    "credential-manager",
+    "google-signin",
+    "passwordless",
+    "biometric",
+    "security",
+    "identity",
+    "fido2",
+    "signin"
   ],
   "repository": {
     "type": "git",
@@ -59,7 +70,7 @@
   "bugs": {
     "url": "https://github.com/benjamineruvieru/react-native-credentials-manager/issues"
   },
-  "homepage": "https://github.com/benjamineruvieru/react-native-credentials-manager#readme",
+  "homepage": "https://docs.benjamineruvieru.com/docs/react-native-credentials-manager/",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
