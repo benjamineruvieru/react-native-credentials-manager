@@ -103,7 +103,6 @@ export default function App() {
                 phoneNumber: credential.phoneNumber,
               });
             }
-            return;
           } catch (e) {
             console.error(e);
           }
