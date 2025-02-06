@@ -2,9 +2,9 @@ import { View, StyleSheet, Button } from 'react-native';
 import {
   signUpWithPasskeys,
   signUpWithPassword,
-  signInWithSavedCredentials,
   signInWithGoogle,
   signOut,
+  signIn,
 } from 'react-native-credentials-manager';
 const WEB_CLIENT_ID = process.env.WEB_CLIENT_ID || '';
 
@@ -40,7 +40,7 @@ const requestJson = {
   },
 };
 
-const signinRequestJson = {
+const signinPasskeysRequestJson = {
   challenge: 'HjBbH__fbLuzy95AGR31yEARA0EMtKlY0NrV5oy3NQw',
   timeout: 1800000,
   userVerification: 'required',
@@ -69,11 +69,19 @@ export default function App() {
         }
       />
       <Button
-        title="Signin With Cred"
+        title="Signin"
         onPress={async () => {
           try {
-            const credential =
-              await signInWithSavedCredentials(signinRequestJson);
+            const credential = await signIn(
+              ['passkeys', 'password', 'google-signin'],
+              {
+                passkeys: signinPasskeysRequestJson,
+                googleSignIn: {
+                  serverClientId: WEB_CLIENT_ID,
+                  autoSelectEnabled: true,
+                },
+              }
+            );
 
             if (credential.type === 'passkey') {
               console.log('Passkey:', credential.authenticationResponseJson);
@@ -81,6 +89,17 @@ export default function App() {
               console.log('Password credentials:', {
                 username: credential.username,
                 password: credential.password,
+              });
+            }
+            if (credential.type === 'google-signin') {
+              console.log('Google credentials:', {
+                id: credential.id,
+                idToken: credential.idToken,
+                displayName: credential.displayName,
+                familyName: credential.familyName,
+                givenName: credential.givenName,
+                profilePicture: credential.profilePicture,
+                phoneNumber: credential.phoneNumber,
               });
             }
           } catch (e) {

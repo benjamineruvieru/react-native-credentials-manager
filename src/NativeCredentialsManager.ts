@@ -1,6 +1,8 @@
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
+export type SignInOption = 'passkeys' | 'password' | 'google-signin';
+
 type CredObject = {
   username: string;
   password: string;
@@ -9,6 +11,12 @@ type CredObject = {
 type PasskeyCredential = {
   type: 'passkey';
   authenticationResponseJson: string;
+};
+
+type GoogleSignInParams = {
+  nonce: string;
+  serverClientId: string;
+  autoSelectEnabled: boolean;
 };
 
 export type GoogleCredential = {
@@ -28,7 +36,10 @@ type PasswordCredential = {
   password: string;
 };
 
-export type Credential = PasskeyCredential | PasswordCredential;
+export type Credential =
+  | PasskeyCredential
+  | PasswordCredential
+  | GoogleCredential;
 
 export interface Spec extends TurboModule {
   signUpWithPasskeys(
@@ -37,12 +48,14 @@ export interface Spec extends TurboModule {
   ): Promise<Object>;
   signUpWithPassword(credObject: CredObject): void;
 
-  signInWithSavedCredentials(requestJson: Object): Promise<Credential>;
-  signInWithGoogle(params: {
-    nonce: string;
-    serverClientId: string;
-    autoSelectEnabled: boolean;
-  }): Promise<GoogleCredential>;
+  signIn(
+    options: SignInOption[],
+    params: {
+      passkeys?: Object;
+      googleSignIn?: GoogleSignInParams;
+    }
+  ): Promise<Credential>;
+  signInWithGoogle(params: GoogleSignInParams): Promise<GoogleCredential>;
   signOut(): Promise<null>;
 }
 

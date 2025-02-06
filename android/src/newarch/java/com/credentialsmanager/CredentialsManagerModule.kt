@@ -1,5 +1,6 @@
 package com.credentialsmanager
 import android.util.Log
+import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.CreateCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
@@ -7,11 +8,11 @@ import com.credentialsmanager.handlers.CredentialHandler
 import com.credentialsmanager.handlers.ErrorHandler
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.credentials.exceptions.ClearCredentialException
 
 class CredentialsManagerModule(
   reactContext: ReactApplicationContext,
@@ -60,29 +61,33 @@ class CredentialsManagerModule(
     }
   }
 
-  override fun signInWithSavedCredentials(
-    requestJson: ReadableMap,
-    promise: Promise,
-  ) {
-    val jsonString = requestJson.toString()
-    coroutineScope.launch {
-      val data = credentialHandler.getSavedCredentials(jsonString)
-      promise.resolve(data)
-    }
-  }
-
-  override fun signOut(
+  override fun signIn(
+    options: ReadableArray,
+    params: ReadableMap,
     promise: Promise,
   ) {
     coroutineScope.launch {
       try {
-        credentialHandler.signOut()
-        promise.resolve(null)}
-        catch (e: ClearCredentialException) {
-          Log.e("CredentialManager", "Error during sign out", e)
-          promise.reject("ERROR", e.message.toString())
-        }
+        val data = credentialHandler.signIn(options = options, params = params)
+        promise.resolve(data)
+      } catch (e: GetCredentialException) {
+        Log.e("CredentialManager", "Error during sign out", e)
+        promise.reject("ERROR", e.message.toString())
       }
+    }
+  }
+
+
+  override fun signOut(promise: Promise) {
+    coroutineScope.launch {
+      try {
+        credentialHandler.signOut()
+        promise.resolve(null)
+      } catch (e: ClearCredentialException) {
+        Log.e("CredentialManager", "Error during sign out", e)
+        promise.reject("ERROR", e.message.toString())
+      }
+    }
   }
 
   override fun signInWithGoogle(

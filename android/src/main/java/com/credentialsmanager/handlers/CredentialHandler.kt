@@ -2,10 +2,12 @@ package com.credentialsmanager.handlers
 
 import android.content.Context
 import android.util.Log
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CreatePasswordRequest
 import androidx.credentials.CreatePublicKeyCredentialRequest
 import androidx.credentials.CreatePublicKeyCredentialResponse
 import androidx.credentials.CredentialManager
+import androidx.credentials.CredentialOption
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
@@ -14,23 +16,22 @@ import androidx.credentials.GetPublicKeyCredentialOption
 import androidx.credentials.PasswordCredential
 import androidx.credentials.PublicKeyCredential
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import org.json.JSONObject
-import androidx.credentials.ClearCredentialStateRequest
 
 class CredentialHandler(
   private val context: Context,
 ) {
   private val credentialManager = CredentialManager.create(context)
 
-  suspend fun signOut(){
-
+  suspend fun signOut() {
     credentialManager.clearCredentialState(ClearCredentialStateRequest())
-
   }
+
   suspend fun createPasskey(
     jsonString: String,
     preferImmediatelyAvailableCredentials: Boolean,
@@ -64,6 +65,49 @@ class CredentialHandler(
   ) {
     val createPasswordRequest = CreatePasswordRequest(id = username, password = password)
     credentialManager.createCredential(context, createPasswordRequest)
+  }
+
+  suspend fun signIn(
+    options: ReadableArray,
+    params: ReadableMap,
+  ): ReadableMap? {
+    val credentialOptions = mutableListOf<CredentialOption>()
+    for (i in 0 until options.size()) {
+      when (options.getString(i)) {
+        "passkeys" -> {
+          if (params.hasKey("passkeys")) {
+            val jsonString = params.getMap("passkeys")?.toString()
+            jsonString?.let {
+              credentialOptions.add(GetPublicKeyCredentialOption(it, null))
+            }
+          }
+        }
+        "password" -> {
+          credentialOptions.add(GetPasswordOption())
+        }
+        "google-signin" -> {
+          if (params.hasKey("googleSignIn")) {
+            val googleParams = params.getMap("googleSignIn")
+            val nonce = googleParams?.getString("nonce") ?: ""
+            val serverClientId = googleParams?.getString("serverClientId") ?: ""
+            val autoSelectEnabled = googleParams?.getBoolean("autoSelectEnabled") ?: false
+
+            credentialOptions.add(
+              getGoogleId(
+                true,
+                nonce,
+                serverClientId,
+                autoSelectEnabled,
+              ),
+            )
+          }
+        }
+      }
+    }
+
+    val request = GetCredentialRequest(credentialOptions)
+    val result = credentialManager.getCredential(context, request)
+    return handleSignInResult(result)
   }
 
   suspend fun getSavedCredentials(jsonString: String): ReadableMap? {
@@ -158,7 +202,6 @@ class CredentialHandler(
       .setNonce(nonce)
       .build()
   }
-
 
   suspend fun googleSignInRequest(googleIdOption: GetGoogleIdOption): GetCredentialResponse {
     val request: GetCredentialRequest =
