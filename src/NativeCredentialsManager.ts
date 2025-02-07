@@ -55,7 +55,7 @@ export interface Spec extends TurboModule {
       googleSignIn?: GoogleSignInParams;
     }
   ): Promise<Credential>;
-  signInWithGoogle(params: GoogleSignInParams): Promise<GoogleCredential>;
+  signUpWithGoogle(params: GoogleSignInParams): Promise<GoogleCredential>;
   signOut(): Promise<null>;
 }
 

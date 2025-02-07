@@ -90,7 +90,7 @@ class CredentialsManagerModule(
     }
   }
 
-  override fun signInWithGoogle(
+  override fun signUpWithGoogle(
     requestObject: ReadableMap,
     promise: Promise,
   ) {

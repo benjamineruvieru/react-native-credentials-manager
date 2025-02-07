@@ -48,10 +48,10 @@ export function signIn(
   });
 }
 
-export function signInWithGoogle(
+export function signUpWithGoogle(
   params: GoogleSignInParams
 ): Promise<GoogleCredential> {
-  return CredentialsManager.signInWithGoogle({
+  return CredentialsManager.signUpWithGoogle({
     ...params,
     nonce: params.nonce ?? '',
     autoSelectEnabled: params.autoSelectEnabled ?? true,

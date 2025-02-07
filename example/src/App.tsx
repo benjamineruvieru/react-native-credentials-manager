@@ -2,7 +2,7 @@ import { View, StyleSheet, Button } from 'react-native';
 import {
   signUpWithPasskeys,
   signUpWithPassword,
-  signInWithGoogle,
+  signUpWithGoogle,
   signOut,
   signIn,
 } from 'react-native-credentials-manager';
@@ -109,10 +109,10 @@ export default function App() {
       />
 
       <Button
-        title="Signin With Google"
+        title="SignUp With Google"
         onPress={async () => {
           try {
-            const credential = await signInWithGoogle({
+            const credential = await signUpWithGoogle({
               serverClientId: WEB_CLIENT_ID,
               autoSelectEnabled: true,
             });

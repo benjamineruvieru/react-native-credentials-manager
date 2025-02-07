@@ -62,16 +62,34 @@ class CredentialsManagerModule(
   }
 
   @ReactMethod
-  fun signInWithSavedCredentials(
-    requestJson: ReadableMap,
+   fun signIn(
+    options: ReadableArray,
+    params: ReadableMap,
     promise: Promise,
   ) {
-    val jsonString = requestJson.toString()
     coroutineScope.launch {
-      val data = credentialHandler.getSavedCredentials(jsonString)
-      promise.resolve(data)
+      try {
+        val data = credentialHandler.signIn(options = options, params = params)
+        promise.resolve(data)
+      } catch (e: GetCredentialException) {
+        Log.e("CredentialManager", "Error during sign out", e)
+        promise.reject("ERROR", e.message.toString())
+      }
     }
   }
+
+
+  // @ReactMethod
+  // fun signInWithSavedCredentials(
+  //   requestJson: ReadableMap,
+  //   promise: Promise,
+  // ) {
+  //   val jsonString = requestJson.toString()
+  //   coroutineScope.launch {
+  //     val data = credentialHandler.getSavedCredentials(jsonString)
+  //     promise.resolve(data)
+  //   }
+  // }
 
   @ReactMethod
   fun signOut(promise: Promise) {
@@ -87,7 +105,7 @@ class CredentialsManagerModule(
   }
 
   @ReactMethod
-  fun signInWithGoogle(
+  fun signUpWithGoogle(
     requestObject: ReadableMap,
     promise: Promise,
   ) {
