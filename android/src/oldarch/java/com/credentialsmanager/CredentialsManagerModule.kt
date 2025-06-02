@@ -55,14 +55,34 @@ class CredentialsManagerModule(
   }
 
   @ReactMethod
-  fun signUpWithPassword(credObject: ReadableMap) {
+  fun signUpWithPassword(credObject: ReadableMap, promise: Promise) {
     val username = credObject.getString("username") ?: ""
     val password = credObject.getString("password") ?: ""
+    
+    if (username.isEmpty()) {
+      promise.reject("INVALID_USERNAME", "Username cannot be empty")
+      return
+    }
+    
+    if (password.isEmpty()) {
+      promise.reject("INVALID_PASSWORD", "Password cannot be empty")
+      return
+    }
+    
     coroutineScope.launch {
       try {
         credentialHandler.createPassword(username, password)
+        
+        // Create success response
+        val result = mapOf(
+          "type" to "password",
+          "username" to username,
+          "success" to true
+        )
+        promise.resolve(result)
       } catch (e: CreateCredentialException) {
         ErrorHandler.handleCredentialError(e)
+        promise.reject("CREDENTIAL_ERROR", e.message.toString())
       }
     }
   }
@@ -160,5 +180,14 @@ class CredentialsManagerModule(
         }
       }
     }
+  }
+
+  @ReactMethod
+  fun signUpWithApple(params: ReadableMap, promise: Promise) {
+    // Since this is an iOS-specific function, we just reject with an appropriate message on Android
+    promise.reject(
+      "PLATFORM_NOT_SUPPORTED",
+      "Sign up with Apple is only supported on iOS devices"
+    )
   }
 }
