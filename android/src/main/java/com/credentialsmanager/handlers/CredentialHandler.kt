@@ -36,26 +36,33 @@ class CredentialHandler(
     jsonString: String,
     preferImmediatelyAvailableCredentials: Boolean,
   ): ReadableMap? {
-    val request =
-      CreatePublicKeyCredentialRequest(
-        requestJson = jsonString,
-        preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
-      )
+    Log.d("CredentialManager", "Creating passkey with request: $jsonString")
+    
+    try {
+      val request =
+        CreatePublicKeyCredentialRequest(
+          requestJson = jsonString,
+          preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
+        )
 
-    val response =
-      credentialManager.createCredential(
-        context,
-        request,
-      ) as CreatePublicKeyCredentialResponse
+      val response =
+        credentialManager.createCredential(
+          context,
+          request,
+        ) as CreatePublicKeyCredentialResponse
 
-    return response.data.getString("androidx.credentials.BUNDLE_KEY_REGISTRATION_RESPONSE_JSON")?.let { json ->
-      val jsonObject = Arguments.createMap()
-      val parsedObject = JSONObject(json)
+      return response.data.getString("androidx.credentials.BUNDLE_KEY_REGISTRATION_RESPONSE_JSON")?.let { json ->
+        val jsonObject = Arguments.createMap()
+        val parsedObject = JSONObject(json)
 
-      parsedObject.keys().forEach { key ->
-        jsonObject.putString(key, parsedObject.getString(key))
+        parsedObject.keys().forEach { key ->
+          jsonObject.putString(key, parsedObject.getString(key))
+        }
+        jsonObject
       }
-      jsonObject
+    } catch (e: Exception) {
+      Log.e("CredentialManager", "Error creating passkey", e)
+      throw e
     }
   }
 
@@ -63,8 +70,15 @@ class CredentialHandler(
     username: String,
     password: String,
   ) {
-    val createPasswordRequest = CreatePasswordRequest(id = username, password = password)
-    credentialManager.createCredential(context, createPasswordRequest)
+    Log.d("CredentialManager", "Creating password credential for username: $username")
+    
+    try {
+      val createPasswordRequest = CreatePasswordRequest(id = username, password = password)
+      credentialManager.createCredential(context, createPasswordRequest)
+    } catch (e: Exception) {
+      Log.e("CredentialManager", "Error creating password credential", e)
+      throw e
+    }
   }
 
   suspend fun signIn(
