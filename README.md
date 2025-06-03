@@ -37,6 +37,46 @@ A React Native library that implements the [Credential Manager](https://develope
 > [!IMPORTANT]
 > 📚 **Documentation has moved!** The complete documentation is now available at [https://docs.benjamineruvieru.com/docs/react-native-credentials-manager/](https://docs.benjamineruvieru.com/docs/react-native-credentials-manager/)
 
+## Platform-Specific Parameters
+
+When using this library, be aware that some parameters are platform-specific:
+
+| Function               | Parameter                               | Platform Support | Notes                                                             |
+| ---------------------- | --------------------------------------- | ---------------- | ----------------------------------------------------------------- |
+| `signUpWithPasskeys()` | `preferImmediatelyAvailableCredentials` | Android only     | This parameter is ignored on iOS                                  |
+| `signUpWithPassword()` | All parameters                          | Android only     | This function is not supported on iOS and will throw an error     |
+| `signIn()`             | `googleSignIn`                          | Android only     | This parameter is ignored on iOS                                  |
+| `signIn()`             | `appleSignIn`                           | iOS only         | This parameter is ignored on Android                              |
+| `signUpWithGoogle()`   | All parameters                          | Cross-platform   | Uses Google Sign-In on Android, Apple Sign-In on iOS              |
+| `signUpWithApple()`    | All parameters                          | iOS only         | This function is not supported on Android and will throw an error |
+
+### Handling Platform Differences
+
+To handle these platform differences, you can use conditional code:
+
+```typescript
+// For passkey registration
+await signUpWithPasskeys(
+  requestJson,
+  Platform.OS === 'android' ? true : false // preferImmediatelyAvailableCredentials
+);
+
+// For sign-in
+await signIn(
+  [
+    'passkeys',
+    'password',
+    Platform.OS === 'android' ? 'google-signin' : 'apple-signin',
+  ],
+  {
+    passkeys: passkeyParams,
+    ...(Platform.OS === 'android'
+      ? { googleSignIn: { serverClientId: 'your-client-id' } }
+      : { appleSignIn: { requestedScopes: ['fullName', 'email'] } }),
+  }
+);
+```
+
 ## iOS Setup Requirements
 
 ### 1. Associated Domains

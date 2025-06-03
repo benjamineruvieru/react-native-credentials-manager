@@ -68,21 +68,53 @@ export type Credential =
 
 // Native module interface
 export interface Spec extends TurboModule {
+  /**
+   * Sign up with passkeys (supported on both Android and iOS)
+   * @param requestJson WebAuthn request object
+   * @param preferImmediatelyAvailableCredentials Android-specific parameter, ignored on iOS
+   */
   signUpWithPasskeys(
     requestJson: Object,
     preferImmediatelyAvailableCredentials: boolean
   ): Promise<Object>;
+
+  /**
+   * Sign up with password (Android only - not supported on iOS)
+   * iOS will reject with UNSUPPORTED_OPERATION error
+   */
   signUpWithPassword(credObject: CredObject): Promise<Object>;
+
+  /**
+   * Sign in with various methods
+   * - 'passkeys': Supported on both platforms
+   * - 'password': Supported on both platforms (uses AutoFill)
+   * - 'google-signin': Android only
+   * - 'apple-signin': iOS only (not available on Android)
+   */
   signIn(
     options: SignInOption[],
     params: {
       passkeys?: Object;
-      googleSignIn?: GoogleSignInParams;
-      appleSignIn?: AppleSignInParams;
+      googleSignIn?: GoogleSignInParams; // Used only on Android
+      appleSignIn?: AppleSignInParams; // Used only on iOS
     }
   ): Promise<Credential>;
+
+  /**
+   * Sign up with Google (Android-specific implementation)
+   */
   signUpWithGoogle(params: GoogleSignInParams): Promise<GoogleCredential>;
+
+  /**
+   * Sign up with Apple (iOS-specific implementation)
+   * Will reject with UNSUPPORTED_OPERATION on Android
+   */
   signUpWithApple(params: AppleSignInParams): Promise<AppleCredential>;
+
+  /**
+   * Sign out (behavior varies by platform)
+   * On iOS, this is a no-op as AuthenticationServices doesn't provide a sign-out method
+   */
   signOut(): Promise<null>;
 }
 

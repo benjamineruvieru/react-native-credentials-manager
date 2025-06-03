@@ -95,11 +95,6 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         // Configure the request 
         registrationRequest.userVerificationPreference = ASAuthorizationPublicKeyCredentialUserVerificationPreferenceRequired;
         
-        // Apply preferImmediatelyAvailableCredentials if supported by the platform
-        if (@available(iOS 16.0, *)) {
-            registrationRequest.preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials;
-        }
-        
         // Create and configure the authorization controller
         ASAuthorizationController *authController = [[ASAuthorizationController alloc] initWithAuthorizationRequests:@[registrationRequest]];
         authController.delegate = self;
@@ -175,7 +170,11 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
                 // Apple Sign In is supported by Authentication Services
                 ASAuthorizationAppleIDProvider *appleIDProvider = [[ASAuthorizationAppleIDProvider alloc] init];
                 ASAuthorizationAppleIDRequest *appleIDRequest = [appleIDProvider createRequest];
-                appleIDRequest.requestedScopes = @[ASAuthorizationScopeFullName, ASAuthorizationScopeEmail];
+                
+                // Default scopes - always use these
+                NSArray<ASAuthorizationScope> *defaultScopes = @[ASAuthorizationScopeFullName, ASAuthorizationScopeEmail];
+                appleIDRequest.requestedScopes = defaultScopes;
+                
                 [authRequests addObject:appleIDRequest];
             } else if ([option isEqualToString:@"google-signin"]) {
                 // Google Sign In is not part of Apple's Authentication Services framework
@@ -219,34 +218,8 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         ASAuthorizationAppleIDProvider *appleIDProvider = [[ASAuthorizationAppleIDProvider alloc] init];
         ASAuthorizationAppleIDRequest *appleIDRequest = [appleIDProvider createRequest];
         
-        // Set requested scopes - convert from TurboModule array
-        NSMutableArray *scopes = [[NSMutableArray alloc] init];
-        
-        // Check if requestedScopes exists and is an array
-        if (params.requestedScopes().size() > 0) {
-            auto requestedScopesVector = params.requestedScopes();
-            for (size_t i = 0; i < requestedScopesVector.size(); i++) {
-                NSString *scope = requestedScopesVector[i];
-                if ([scope isEqualToString:@"fullName"]) {
-                    [scopes addObject:ASAuthorizationScopeFullName];
-                } else if ([scope isEqualToString:@"email"]) {
-                    [scopes addObject:ASAuthorizationScopeEmail];
-                }
-            }
-        }
-        
-        if (scopes.count > 0) {
-            appleIDRequest.requestedScopes = [scopes copy];
-        } else {
-            // Default scopes
-            appleIDRequest.requestedScopes = @[ASAuthorizationScopeFullName, ASAuthorizationScopeEmail];
-        }
-        
-        // Use nonce if provided
-        NSString *nonce = params.nonce();
-        if (nonce && nonce.length > 0) {
-            appleIDRequest.nonce = nonce;
-        }
+        // Always use the default scopes
+        appleIDRequest.requestedScopes = @[ASAuthorizationScopeFullName, ASAuthorizationScopeEmail];
         
         ASAuthorizationController *authController = [[ASAuthorizationController alloc] initWithAuthorizationRequests:@[appleIDRequest]];
         authController.delegate = self;
@@ -272,8 +245,8 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
     }
     
     RCTPromiseResolveBlock resolve = self.currentResolve;
-    self.currentResolve = nil;
     self.currentReject = nil;
+    self.currentResolve = nil;
     
     if ([authorization.credential isKindOfClass:[ASAuthorizationPlatformPublicKeyCredentialRegistration class]]) {
         // Passkey registration - handled by Apple's Authentication Services
@@ -290,7 +263,7 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         };
         
         resolve(result);
-        
+        return;
     } else if ([authorization.credential isKindOfClass:[ASAuthorizationPlatformPublicKeyCredentialAssertion class]]) {
         // Passkey authentication - handled by Apple's Authentication Services
         ASAuthorizationPlatformPublicKeyCredentialAssertion *assertion = (ASAuthorizationPlatformPublicKeyCredentialAssertion *)authorization.credential;
@@ -301,7 +274,7 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         };
         
         resolve(result);
-        
+        return;
     } else if ([authorization.credential isKindOfClass:[ASPasswordCredential class]]) {
         // AutoFill password authentication - handled by Apple's Authentication Services
         ASPasswordCredential *passwordCredential = (ASPasswordCredential *)authorization.credential;
@@ -313,7 +286,7 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         };
         
         resolve(result);
-        
+        return;
     } else if ([authorization.credential isKindOfClass:[ASAuthorizationAppleIDCredential class]]) {
         // Apple Sign In - officially supported by Authentication Services
         ASAuthorizationAppleIDCredential *appleIDCredential = (ASAuthorizationAppleIDCredential *)authorization.credential;
@@ -344,7 +317,11 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         }
         
         resolve([result copy]);
+        return;
     }
+    
+    // If we reach here, we couldn't handle the credential type
+    resolve(@{@"type": @"unknown"});
 }
 
 - (void)authorizationController:(ASAuthorizationController *)controller didCompleteWithError:(NSError *)error {

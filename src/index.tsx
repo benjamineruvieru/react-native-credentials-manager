@@ -52,6 +52,7 @@ export function signIn(
   params: {
     passkeys?: Object;
     googleSignIn?: GoogleSignInParams;
+    appleSignIn?: AppleSignInParams;
   }
 ): Promise<Credential> {
   // Transform options for iOS compatibility
@@ -63,14 +64,28 @@ export function signIn(
     return option;
   });
 
-  return CredentialsManager.signIn(processedOptions, {
+  // Prepare parameters for both platforms
+  const signInParams: any = {
     ...params,
     googleSignIn: {
       serverClientId: params?.googleSignIn?.serverClientId ?? '',
       nonce: params?.googleSignIn?.nonce ?? '',
       autoSelectEnabled: params?.googleSignIn?.autoSelectEnabled ?? true,
     },
-  });
+  };
+
+  // If we have Apple Sign In option on iOS, add Apple params
+  if (Platform.OS === 'ios' && processedOptions.includes('apple-signin')) {
+    signInParams.appleSignIn = {
+      nonce: params?.appleSignIn?.nonce || params?.googleSignIn?.nonce || '',
+      requestedScopes: params?.appleSignIn?.requestedScopes || [
+        'fullName',
+        'email',
+      ],
+    };
+  }
+
+  return CredentialsManager.signIn(processedOptions, signInParams);
 }
 
 export function signUpWithGoogle(
