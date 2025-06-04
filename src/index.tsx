@@ -92,12 +92,11 @@ export function signUpWithGoogle(
   params: GoogleSignInParams
 ): Promise<GoogleCredential | AppleCredential> {
   if (Platform.OS === 'ios') {
-    // On iOS, automatically use Apple Sign In instead of Google Sign In
-    // This provides seamless cross-platform compatibility
-    return signUpWithApple({
-      nonce: params.nonce,
-      requestedScopes: ['fullName', 'email'],
-    }) as Promise<AppleCredential>;
+    return Promise.reject(
+      new Error(
+        'Google Sign In is only available on Android. Use signUpWithApple on iOS.'
+      )
+    );
   }
 
   return CredentialsManager.signUpWithGoogle({
