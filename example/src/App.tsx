@@ -54,19 +54,16 @@ export default function App() {
             // Use the helper to generate a valid authentication request
             const validAuthRequest = generateTestAuthenticationRequest();
 
-            const credential = await signIn(
-              ['passkeys', 'password', 'apple-signin'],
-              {
-                passkeys: validAuthRequest,
-                googleSignIn: {
-                  serverClientId: WEB_CLIENT_ID,
-                  autoSelectEnabled: true,
-                },
-                appleSignIn: {
-                  requestedScopes: ['fullName', 'email'],
-                },
-              }
-            );
+            const credential = await signIn(['google-signin'], {
+              passkeys: validAuthRequest,
+              googleSignIn: {
+                serverClientId: WEB_CLIENT_ID,
+                autoSelectEnabled: true,
+              },
+              appleSignIn: {
+                requestedScopes: ['fullName', 'email'],
+              },
+            });
 
             if (credential.type === 'passkey') {
               console.log('Passkey:', credential.authenticationResponseJson);
