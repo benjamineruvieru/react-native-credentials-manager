@@ -32,7 +32,8 @@ A React Native library that implements the [Credential Manager](https://develope
 | Manual Password Storage   | ✅ Credential Manager API | ❌ Not supported (iOS limitation) |
 | Third-party Sign In       | ✅ Google Sign In         | ✅ Apple Sign In                  |
 
-> [!NOTE] > **iOS Implementation**: This library strictly follows Apple's Authentication Services framework. Manual password storage is not supported on iOS as it's not part of Apple's official Authentication Services APIs. Use AutoFill passwords instead.
+> [!NOTE]
+> **iOS Implementation**: This library strictly follows Apple's Authentication Services framework. Manual password storage is not supported on iOS as it's not part of Apple's official Authentication Services APIs. Use AutoFill passwords instead.
 
 > [!IMPORTANT]
 > 📚 **Documentation has moved!** The complete documentation is now available at [https://docs.benjamineruvieru.com/docs/react-native-credentials-manager/](https://docs.benjamineruvieru.com/docs/react-native-credentials-manager/)
