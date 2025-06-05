@@ -1,5 +1,6 @@
 package com.credentialsmanager.handlers
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
@@ -16,6 +17,7 @@ import androidx.credentials.GetPublicKeyCredentialOption
 import androidx.credentials.PasswordCredential
 import androidx.credentials.PublicKeyCredential
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -27,6 +29,23 @@ class CredentialHandler(
   private val context: Context,
 ) {
   private val credentialManager = CredentialManager.create(context)
+
+  // Helper function to get activity context
+  private fun getActivityContext(): Context {
+    if (context is ReactApplicationContext) {
+      val activity = context.currentActivity
+      if (activity != null) {
+        return activity
+      } else {
+        Log.w("CredentialManager", "No current activity found. UI operations may fail - ensure you're calling from the main/UI thread.")
+      }
+    } else {
+      Log.w("CredentialManager", "Context is not ReactApplicationContext. UI operations may fail.")
+    }
+    // If we can't get an activity context, use the original context
+    // This might still cause issues for UI operations, but it's better than null
+    return context
+  }
 
   suspend fun signOut() {
     credentialManager.clearCredentialState(ClearCredentialStateRequest())
@@ -45,9 +64,10 @@ class CredentialHandler(
           preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
         )
 
+      val activityContext = getActivityContext()
       val response =
         credentialManager.createCredential(
-          context,
+          activityContext,
           request,
         ) as CreatePublicKeyCredentialResponse
 
@@ -73,8 +93,9 @@ class CredentialHandler(
     Log.d("CredentialManager", "Creating password credential for username: $username")
     
     try {
+      val activityContext = getActivityContext()
       val createPasswordRequest = CreatePasswordRequest(id = username, password = password)
-      credentialManager.createCredential(context, createPasswordRequest)
+      credentialManager.createCredential(activityContext, createPasswordRequest)
     } catch (e: Exception) {
       Log.e("CredentialManager", "Error creating password credential", e)
       throw e
@@ -120,17 +141,19 @@ class CredentialHandler(
     }
 
     val request = GetCredentialRequest(credentialOptions)
-    val result = credentialManager.getCredential(context, request)
+    val activityContext = getActivityContext()
+    val result = credentialManager.getCredential(activityContext, request)
     return handleSignInResult(result)
   }
 
   suspend fun getSavedCredentials(jsonString: String): ReadableMap? {
     val getPublicKeyCredentialOption = GetPublicKeyCredentialOption(jsonString, null)
     val getPasswordOption = GetPasswordOption()
+    val activityContext = getActivityContext()
 
     val result =
       credentialManager.getCredential(
-        context,
+        activityContext,
         GetCredentialRequest(
           listOf(
             getPublicKeyCredentialOption,
@@ -224,10 +247,11 @@ class CredentialHandler(
         .addCredentialOption(googleIdOption)
         .build()
 
+    val activityContext = getActivityContext()
     val result =
       credentialManager.getCredential(
         request = request,
-        context = context,
+        context = activityContext,
       )
 
     return result
