@@ -131,6 +131,8 @@ class CredentialsManagerModule(
         val data = credentialHandler.handleSignInResult(result)
         promise.resolve(data)
       } catch (e: GetCredentialException) {
+            Log.d("CredentialManager", "First sign in attempt failed", e)
+
         when (e) {
           is NoCredentialException -> {
             try {

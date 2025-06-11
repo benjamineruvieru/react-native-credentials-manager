@@ -20,7 +20,9 @@ A React Native library that implements the [Credential Manager](https://develope
 
 ## Platform Support
 
-- ✅ **Android**: Full implementation with Credential Manager API (Android 14+ / API 34+)
+- ✅ **Android**: Implementation with Credential Manager API (Android 4.4+ / API 19+)
+  - **Android 4.4+ (API 19+)**: Username/password storage and federated sign-in (Google Sign-In)
+  - **Android 9+ (API 28+)**: Full passkey (FIDO2/WebAuthn) support
 - ✅ **iOS**: Full implementation with AuthenticationServices (iOS 16.0+)
 
 ### Platform-Specific Features
@@ -32,8 +34,13 @@ A React Native library that implements the [Credential Manager](https://develope
 | Manual Password Storage   | ✅ Credential Manager API | ❌ Not supported (iOS limitation) |
 | Third-party Sign In       | ✅ Google Sign In         | ✅ Apple Sign In                  |
 
+> [!NOTE] > **iOS Implementation**: This library strictly follows Apple's Authentication Services framework. Manual password storage is not supported on iOS as it's not part of Apple's official Authentication Services APIs. Use AutoFill passwords instead.
+
 > [!NOTE]
-> **iOS Implementation**: This library strictly follows Apple's Authentication Services framework. Manual password storage is not supported on iOS as it's not part of Apple's official Authentication Services APIs. Use AutoFill passwords instead.
+> **Android Implementation**: Features are available based on Android version:
+>
+> - **API 19+**: Basic credential storage and Google Sign-In
+> - **API 28+**: Passkey support added
 
 > [!IMPORTANT]
 > 📚 **Documentation has moved!** The complete documentation is now available at [https://docs.benjamineruvieru.com/docs/react-native-credentials-manager/](https://docs.benjamineruvieru.com/docs/react-native-credentials-manager/)

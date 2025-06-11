@@ -68,10 +68,10 @@ export function generateTestRegistrationRequest(
     attestation: 'none',
     excludeCredentials: [],
     authenticatorSelection: {
+      residentKey: 'preferred',
+      requireResidentKey: false,
+      userVerification: 'preferred',
       authenticatorAttachment: 'platform',
-      requireResidentKey: true,
-      residentKey: 'required',
-      userVerification: 'required',
     },
   };
 }

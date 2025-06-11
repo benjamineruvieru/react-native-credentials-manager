@@ -229,7 +229,7 @@ class CredentialHandler(
     serverClientId: String,
     autoSelectEnabled: Boolean,
   ): GetGoogleIdOption {
-    Log.d("CredentialManager", "getGoogleId - setFilterByAuthorizedAccounts: $setFilterByAuthorizedAccounts")
+    Log.d("CredentialManager", "getGoogleId - setFilterByAuthorizedAccounts: $setFilterByAuthorizedAccounts  autoSelectEnabled: $autoSelectEnabled")
 
     return GetGoogleIdOption
       .Builder()

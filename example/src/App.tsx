@@ -54,7 +54,7 @@ export default function App() {
             // Use the helper to generate a valid authentication request
             const validAuthRequest = generateTestAuthenticationRequest();
 
-            const credential = await signIn(['google-signin'], {
+            const credential = await signIn(['passkeys'], {
               passkeys: validAuthRequest,
               googleSignIn: {
                 serverClientId: WEB_CLIENT_ID,
@@ -105,7 +105,7 @@ export default function App() {
             try {
               const credential = await signUpWithGoogle({
                 serverClientId: WEB_CLIENT_ID,
-                autoSelectEnabled: true,
+                autoSelectEnabled: false,
               });
               if (credential.type === 'google-signin') {
                 console.log('Google credentials:', {
