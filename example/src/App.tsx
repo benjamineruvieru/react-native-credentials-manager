@@ -53,17 +53,20 @@ export default function App() {
           try {
             // Use the helper to generate a valid authentication request
             const validAuthRequest = generateTestAuthenticationRequest();
-
-            const credential = await signIn(['passkeys'], {
-              passkeys: validAuthRequest,
-              googleSignIn: {
-                serverClientId: WEB_CLIENT_ID,
-                autoSelectEnabled: true,
-              },
-              appleSignIn: {
-                requestedScopes: ['fullName', 'email'],
-              },
-            });
+            // Example 1: Using multiple auth options (returns Credential union type)
+            const credential = await signIn(
+              ['passkeys', 'password', 'google-signin', 'apple-signin'],
+              {
+                passkeys: validAuthRequest,
+                googleSignIn: {
+                  serverClientId: WEB_CLIENT_ID,
+                  autoSelectEnabled: true,
+                },
+                appleSignIn: {
+                  requestedScopes: ['fullName', 'email'],
+                },
+              }
+            );
 
             if (credential.type === 'passkey') {
               console.log('Passkey:', credential.authenticationResponseJson);
@@ -92,6 +95,13 @@ export default function App() {
                 email: credential.email,
               });
             }
+
+            // Example 2: Using single auth option (returns specific type)
+            // const passkeyCredential = await signIn(['passkeys'], {
+            //   passkeys: validAuthRequest,
+            // });
+            // // TypeScript knows this is PasskeyCredential, so we can access properties directly
+            // console.log('Passkey:', passkeyCredential.authenticationResponseJson);
           } catch (e) {
             console.error(e);
           }

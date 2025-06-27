@@ -13,14 +13,14 @@ type CredObject = {
   password: string;
 };
 
-type PasswordCredential = {
+export type PasswordCredential = {
   type: 'password';
   username: string;
   password: string;
 };
 
 // Passkey authentication types
-type PasskeyCredential = {
+export type PasskeyCredential = {
   type: 'passkey';
   authenticationResponseJson: string;
 };
@@ -87,7 +87,7 @@ export interface Spec extends TurboModule {
   /**
    * Sign in with various methods
    * - 'passkeys': Supported on both platforms
-   * - 'password': Supported on both platforms (uses AutoFill)
+   * - 'password': Supported on android
    * - 'google-signin': Android only
    * - 'apple-signin': iOS only (not available on Android)
    */

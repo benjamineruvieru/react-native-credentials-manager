@@ -4,6 +4,8 @@ import type {
   GoogleCredential,
   AppleCredential,
   SignInOption,
+  PasskeyCredential,
+  PasswordCredential,
 } from './NativeCredentialsManager';
 import { Platform } from 'react-native';
 
@@ -17,6 +19,15 @@ type AppleSignInParams = {
   nonce?: string;
   requestedScopes?: ('fullName' | 'email')[];
 };
+
+type CredentialMap = {
+  'passkeys': PasskeyCredential;
+  'password': PasswordCredential;
+  'google-signin': GoogleCredential;
+  'apple-signin': AppleCredential;
+};
+
+type SignInResult<T extends readonly SignInOption[]> = CredentialMap[T[number]];
 
 export function signUpWithPasskeys(
   requestJson: Object,
@@ -36,8 +47,6 @@ export function signUpWithPassword({
   password: string;
 }): Promise<Object> {
   if (Platform.OS === 'ios') {
-    // iOS only supports AutoFill passwords through Apple's Authentication Services
-    // Manual password storage is not supported
     return Promise.reject(
       new Error(
         'Manual password storage is not supported on iOS. Use AutoFill passwords through signIn method instead.'
@@ -47,50 +56,56 @@ export function signUpWithPassword({
   return CredentialsManager.signUpWithPassword({ password, username });
 }
 
-export function signIn(
-  options: SignInOption[],
+export function signIn<T extends readonly SignInOption[]>(
+  options: T,
   params: {
     passkeys?: Object;
     googleSignIn?: GoogleSignInParams;
     appleSignIn?: AppleSignInParams;
   }
-): Promise<Credential> {
-  // Transform options for iOS compatibility
-  const processedOptions = options.map((option) => {
-    if (option === 'google-signin' && Platform.OS === 'ios') {
-      // Automatically replace google-signin with apple-signin on iOS
-      return 'apple-signin';
-    }
-    return option;
-  });
-
-  // Prepare parameters for both platforms
-  const signInParams: any = {
-    ...params,
-    googleSignIn: {
-      serverClientId: params?.googleSignIn?.serverClientId ?? '',
-      nonce: params?.googleSignIn?.nonce ?? '',
-      autoSelectEnabled: params?.googleSignIn?.autoSelectEnabled ?? true,
-    },
+): Promise<SignInResult<T>> {
+  const signInParams: {
+    passkeys?: Object;
+    googleSignIn?: {
+      serverClientId: string;
+      nonce: string;
+      autoSelectEnabled: boolean;
+    };
+    appleSignIn?: {
+      nonce: string;
+      requestedScopes: ('fullName' | 'email')[];
+    };
+  } = {
+    passkeys: params.passkeys,
   };
 
+  if (options.includes('google-signin')) {
+    signInParams.googleSignIn = {
+      serverClientId: params.googleSignIn?.serverClientId ?? '',
+      nonce: params.googleSignIn?.nonce ?? '',
+      autoSelectEnabled: params.googleSignIn?.autoSelectEnabled ?? true,
+    };
+  }
+
   // If we have Apple Sign In option on iOS, add Apple params
-  if (Platform.OS === 'ios' && processedOptions.includes('apple-signin')) {
+  if (Platform.OS === 'ios' && options.includes('apple-signin')) {
     signInParams.appleSignIn = {
-      nonce: params?.appleSignIn?.nonce || params?.googleSignIn?.nonce || '',
-      requestedScopes: params?.appleSignIn?.requestedScopes || [
+      nonce: params.appleSignIn?.nonce ?? '',
+      requestedScopes: params.appleSignIn?.requestedScopes ?? [
         'fullName',
         'email',
       ],
     };
   }
 
-  return CredentialsManager.signIn(processedOptions, signInParams);
+  return CredentialsManager.signIn([...options], signInParams) as Promise<
+    SignInResult<T>
+  >;
 }
 
 export function signUpWithGoogle(
   params: GoogleSignInParams
-): Promise<GoogleCredential | AppleCredential> {
+): Promise<GoogleCredential> {
   if (Platform.OS === 'ios') {
     return Promise.reject(
       new Error(
@@ -136,4 +151,6 @@ export type {
   SignInOption,
   GoogleSignInParams,
   AppleSignInParams,
+  PasskeyCredential,
+  PasswordCredential,
 };
