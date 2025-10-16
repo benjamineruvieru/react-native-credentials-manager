@@ -1,22 +1,23 @@
 // set Info.plist values
 import configPlugin from '@expo/config-plugins';
 
-const {createRunOncePlugin, withEntitlementsPlist, withInfoPlist} = configPlugin
+const { createRunOncePlugin, withEntitlementsPlist, withInfoPlist } =
+  configPlugin;
 
 const withAllowMixedLocalizations = function (config) {
-  return withInfoPlist(config, function (config) {
-    config.modResults.CFBundleAllowMixedLocalizations =
-      config.modResults.CFBundleAllowMixedLocalizations ?? true;
+  return withInfoPlist(config, function (modConfig) {
+    modConfig.modResults.CFBundleAllowMixedLocalizations =
+      modConfig.modResults.CFBundleAllowMixedLocalizations ?? true;
 
-    return config;
+    return modConfig;
   });
 };
 
 const withDefaultAppleSignIn = function (config) {
   config = withAllowMixedLocalizations(config);
-  return withEntitlementsPlist(config, function (config) {
-    config.modResults['com.apple.developer.applesignin'] = ['Default'];
-    return config;
+  return withEntitlementsPlist(config, function (modConfig) {
+    modConfig.modResults['com.apple.developer.applesignin'] = ['Default'];
+    return modConfig;
   });
 };
 

@@ -102,12 +102,12 @@ jobs:
 
       - name: Build example for Android
         env:
-          JAVA_OPTS: "-XX:MaxHeapSize=6g"
+          JAVA_OPTS: '-XX:MaxHeapSize=6g'
         run: |
           yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-14
     env:
       TURBO_CACHE_DIR: .turbo/ios
     steps:
@@ -116,6 +116,22 @@ jobs:
 
       - name: Setup
         uses: ./.github/actions/setup
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: example
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Show build environment
+        run: |
+          xcodebuild -version
+          xcode-select -p
+          clang --version
 
       - name: Cache turborepo for iOS
         uses: actions/cache@v4
@@ -140,7 +156,7 @@ jobs:
         with:
           path: |
             **/ios/Pods
-          key: ${{ runner.os }}-cocoapods-${{ hashFiles('example/ios/Podfile.lock') }}
+          key: ${{ runner.os }}-cocoapods-${{ hashFiles('example/ios/Podfile.lock', 'example/ios/Podfile') }}
           restore-keys: |
             ${{ runner.os }}-cocoapods-
 
@@ -159,6 +175,11 @@ jobs:
           path: |
             **/ios/Pods
           key: ${{ steps.cocoapods-cache.outputs.cache-key }}
+
+      - name: Clean iOS build folder
+        if: env.turbo_cache_hit != 1
+        run: |
+          rm -rf example/ios/build
 
       - name: Build example for iOS
         run: |
