@@ -117,10 +117,16 @@ class CredentialsManagerModule(
     val nonce = requestObject.getString("nonce") ?: ""
     val serverClientId = requestObject.getString("serverClientId") ?: ""
     val autoSelectEnabled = requestObject.getBoolean("autoSelectEnabled")
+    // Default to false for sign-up (show all accounts)
+    val filterByAuthorizedAccounts = if (requestObject.hasKey("filterByAuthorizedAccounts")) {
+      requestObject.getBoolean("filterByAuthorizedAccounts")
+    } else {
+      false
+    }
 
     val googleIdOption =
       credentialHandler.getGoogleId(
-        setFilterByAuthorizedAccounts = true,
+        setFilterByAuthorizedAccounts = filterByAuthorizedAccounts,
         nonce = nonce,
         serverClientId = serverClientId,
         autoSelectEnabled = autoSelectEnabled,
