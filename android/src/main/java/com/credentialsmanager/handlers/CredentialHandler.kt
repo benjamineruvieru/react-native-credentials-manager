@@ -126,10 +126,16 @@ class CredentialHandler(
             val nonce = googleParams?.getString("nonce") ?: ""
             val serverClientId = googleParams?.getString("serverClientId") ?: ""
             val autoSelectEnabled = googleParams?.getBoolean("autoSelectEnabled") ?: false
+            // Default to true for sign-in (show only authorized accounts)
+            val filterByAuthorizedAccounts = if (googleParams?.hasKey("filterByAuthorizedAccounts") == true) {
+              googleParams.getBoolean("filterByAuthorizedAccounts")
+            } else {
+              true
+            }
 
             credentialOptions.add(
               getGoogleId(
-                true,
+                filterByAuthorizedAccounts,
                 nonce,
                 serverClientId,
                 autoSelectEnabled,

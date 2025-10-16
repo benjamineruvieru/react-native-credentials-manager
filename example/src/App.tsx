@@ -61,6 +61,8 @@ export default function App() {
                 googleSignIn: {
                   serverClientId: WEB_CLIENT_ID,
                   autoSelectEnabled: true,
+                  // Show only accounts that have previously authorized the app
+                  filterByAuthorizedAccounts: true,
                 },
                 appleSignIn: {
                   requestedScopes: ['fullName', 'email'],
@@ -116,6 +118,8 @@ export default function App() {
               const credential = await signUpWithGoogle({
                 serverClientId: WEB_CLIENT_ID,
                 autoSelectEnabled: false,
+                // Show all Google accounts on the device, not just authorized ones
+                filterByAuthorizedAccounts: false,
               });
               if (credential.type === 'google-signin') {
                 console.log('Google credentials:', {

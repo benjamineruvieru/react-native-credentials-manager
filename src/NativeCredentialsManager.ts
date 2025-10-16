@@ -30,6 +30,7 @@ type GoogleSignInParams = {
   nonce: string;
   serverClientId: string;
   autoSelectEnabled: boolean;
+  filterByAuthorizedAccounts?: boolean;
 };
 
 export type GoogleCredential = {

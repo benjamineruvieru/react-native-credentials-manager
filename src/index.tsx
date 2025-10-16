@@ -13,6 +13,7 @@ type GoogleSignInParams = {
   nonce?: string;
   serverClientId: string;
   autoSelectEnabled?: boolean;
+  filterByAuthorizedAccounts?: boolean;
 };
 
 type AppleSignInParams = {
@@ -70,6 +71,7 @@ export function signIn<T extends readonly SignInOption[]>(
       serverClientId: string;
       nonce: string;
       autoSelectEnabled: boolean;
+      filterByAuthorizedAccounts: boolean;
     };
     appleSignIn?: {
       nonce: string;
@@ -84,6 +86,8 @@ export function signIn<T extends readonly SignInOption[]>(
       serverClientId: params.googleSignIn?.serverClientId ?? '',
       nonce: params.googleSignIn?.nonce ?? '',
       autoSelectEnabled: params.googleSignIn?.autoSelectEnabled ?? true,
+      filterByAuthorizedAccounts:
+        params.googleSignIn?.filterByAuthorizedAccounts ?? true,
     };
   }
 
@@ -118,6 +122,7 @@ export function signUpWithGoogle(
     ...params,
     nonce: params.nonce ?? '',
     autoSelectEnabled: params.autoSelectEnabled ?? true,
+    filterByAuthorizedAccounts: params.filterByAuthorizedAccounts ?? false,
   });
 }
 
