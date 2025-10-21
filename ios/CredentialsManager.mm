@@ -118,6 +118,8 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
        resolve:(RCTPromiseResolveBlock)resolve
         reject:(RCTPromiseRejectBlock)reject {
     
+    id passkeyParams = params.passkeys();
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         self.currentResolve = resolve;
         self.currentReject = reject;
@@ -126,8 +128,6 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         
         for (NSString *option in options) {
             if ([option isEqualToString:@"passkeys"]) {
-                // Extract passkeys parameters from the params object
-                id passkeyParams = params.passkeys();
                 if (!passkeyParams || ![passkeyParams isKindOfClass:[NSDictionary class]]) {
                     RCTLogError(@"Missing or invalid passkeys parameters");
                     continue;
@@ -167,11 +167,9 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
                 ASAuthorizationPasswordRequest *passwordRequest = [passwordProvider createRequest];
                 [authRequests addObject:passwordRequest];
             } else if ([option isEqualToString:@"apple-signin"]) {
-                // Apple Sign In is supported by Authentication Services
                 ASAuthorizationAppleIDProvider *appleIDProvider = [[ASAuthorizationAppleIDProvider alloc] init];
                 ASAuthorizationAppleIDRequest *appleIDRequest = [appleIDProvider createRequest];
                 
-                // Default scopes - always use these
                 NSArray<ASAuthorizationScope> *defaultScopes = @[ASAuthorizationScopeFullName, ASAuthorizationScopeEmail];
                 appleIDRequest.requestedScopes = defaultScopes;
                 
@@ -202,7 +200,6 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
                  resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject {
     // Google Sign In is not part of Apple's Authentication Services framework
-    // This should be handled at the JavaScript layer for cross-platform compatibility
     reject(@"UNSUPPORTED_OPERATION", @"Google Sign In is not available on iOS. Use Apple Sign In instead.", nil);
 }
 
@@ -214,11 +211,9 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         self.currentResolve = resolve;
         self.currentReject = reject;
         
-        // Apple Sign In is officially supported by Authentication Services framework
         ASAuthorizationAppleIDProvider *appleIDProvider = [[ASAuthorizationAppleIDProvider alloc] init];
         ASAuthorizationAppleIDRequest *appleIDRequest = [appleIDProvider createRequest];
         
-        // Always use the default scopes
         appleIDRequest.requestedScopes = @[ASAuthorizationScopeFullName, ASAuthorizationScopeEmail];
         
         ASAuthorizationController *authController = [[ASAuthorizationController alloc] initWithAuthorizationRequests:@[appleIDRequest]];
