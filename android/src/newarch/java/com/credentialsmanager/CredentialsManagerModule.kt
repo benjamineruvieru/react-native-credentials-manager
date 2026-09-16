@@ -6,6 +6,7 @@ import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.credentialsmanager.handlers.CredentialHandler
 import com.credentialsmanager.handlers.ErrorHandler
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
@@ -68,11 +69,11 @@ class CredentialsManagerModule(
         credentialHandler.createPassword(username, password)
         
         // Create success response
-        val result = mapOf(
-          "type" to "password",
-          "username" to username,
-          "success" to true
-        )
+        val result = Arguments.createMap().apply {
+          putString("type", "password")
+          putString("username", username)
+          putBoolean("success", true)
+        }
         promise.resolve(result)
       } catch (e: CreateCredentialException) {
         ErrorHandler.handleCredentialError(e)
