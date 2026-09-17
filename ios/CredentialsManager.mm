@@ -3,6 +3,25 @@
 #import <React/RCTLog.h>
 #import <AuthenticationServices/AuthenticationServices.h>
 
+static NSArray<NSString *> *RNCMNSArrayFromLazyStringVector(const facebook::react::LazyVector<NSString *> &vec)
+{
+    NSMutableArray<NSString *> *result = [NSMutableArray arrayWithCapacity:vec.size()];
+    for (size_t i = 0, n = vec.size(); i < n; i++) {
+        NSString *value = vec.at(i);
+        if (value != nil) {
+            [result addObject:value];
+        }
+    }
+    return result;
+}
+
+@interface CredentialsManager ()
+- (NSArray<ASAuthorizationScope> *)appleAuthorizationScopesFromJSScopes:(NSArray<NSString *> *)scopes;
+- (void)configureAppleIDRequest:(ASAuthorizationAppleIDRequest *)request
+                          nonce:(NSString *)nonce
+                requestedScopes:(NSArray<NSString *> *)requestedScopes;
+@end
+
 @implementation CredentialsManager
 
 RCT_EXPORT_MODULE()
@@ -119,6 +138,14 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         reject:(RCTPromiseRejectBlock)reject {
     
     id passkeyParams = params.passkeys();
+
+    NSString *appleNonce = nil;
+    NSArray<NSString *> *appleRequestedScopes = nil;
+    std::optional<JS::NativeCredentialsManager::AppleSignInParams> appleSignIn = params.appleSignIn();
+    if (appleSignIn.has_value()) {
+        appleNonce = appleSignIn->nonce();
+        appleRequestedScopes = RNCMNSArrayFromLazyStringVector(appleSignIn->requestedScopes());
+    }
     
     dispatch_async(dispatch_get_main_queue(), ^{
         self.currentResolve = resolve;
@@ -169,9 +196,7 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
             } else if ([option isEqualToString:@"apple-signin"]) {
                 ASAuthorizationAppleIDProvider *appleIDProvider = [[ASAuthorizationAppleIDProvider alloc] init];
                 ASAuthorizationAppleIDRequest *appleIDRequest = [appleIDProvider createRequest];
-                
-                NSArray<ASAuthorizationScope> *defaultScopes = @[ASAuthorizationScopeFullName, ASAuthorizationScopeEmail];
-                appleIDRequest.requestedScopes = defaultScopes;
+                [self configureAppleIDRequest:appleIDRequest nonce:appleNonce requestedScopes:appleRequestedScopes];
                 
                 [authRequests addObject:appleIDRequest];
             } else if ([option isEqualToString:@"google-signin"]) {
@@ -206,6 +231,8 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
 - (void)signUpWithApple:(JS::NativeCredentialsManager::AppleSignInParams &)params
                 resolve:(RCTPromiseResolveBlock)resolve
                  reject:(RCTPromiseRejectBlock)reject {
+    NSString *nonce = params.nonce();
+    NSArray<NSString *> *requestedScopes = RNCMNSArrayFromLazyStringVector(params.requestedScopes());
     
     dispatch_async(dispatch_get_main_queue(), ^{
         self.currentResolve = resolve;
@@ -213,8 +240,7 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
         
         ASAuthorizationAppleIDProvider *appleIDProvider = [[ASAuthorizationAppleIDProvider alloc] init];
         ASAuthorizationAppleIDRequest *appleIDRequest = [appleIDProvider createRequest];
-        
-        appleIDRequest.requestedScopes = @[ASAuthorizationScopeFullName, ASAuthorizationScopeEmail];
+        [self configureAppleIDRequest:appleIDRequest nonce:nonce requestedScopes:requestedScopes];
         
         ASAuthorizationController *authController = [[ASAuthorizationController alloc] initWithAuthorizationRequests:@[appleIDRequest]];
         authController.delegate = self;
@@ -376,6 +402,32 @@ preferImmediatelyAvailableCredentials:(BOOL)preferImmediatelyAvailableCredential
     }
     
     return keyWindow ?: [[UIApplication sharedApplication] windows].firstObject;
+}
+
+#pragma mark - Apple Sign In Helpers
+
+- (NSArray<ASAuthorizationScope> *)appleAuthorizationScopesFromJSScopes:(NSArray<NSString *> *)scopes {
+    NSMutableArray<ASAuthorizationScope> *mappedScopes = [NSMutableArray array];
+    for (NSString *scope in scopes) {
+        if ([scope isEqualToString:@"fullName"]) {
+            [mappedScopes addObject:ASAuthorizationScopeFullName];
+        } else if ([scope isEqualToString:@"email"]) {
+            [mappedScopes addObject:ASAuthorizationScopeEmail];
+        }
+    }
+
+    return mappedScopes.count > 0
+        ? [mappedScopes copy]
+        : @[ASAuthorizationScopeFullName, ASAuthorizationScopeEmail];
+}
+
+- (void)configureAppleIDRequest:(ASAuthorizationAppleIDRequest *)request
+                          nonce:(NSString *)nonce
+                requestedScopes:(NSArray<NSString *> *)requestedScopes {
+    if (nonce.length > 0) {
+        request.nonce = nonce;
+    }
+    request.requestedScopes = [self appleAuthorizationScopesFromJSScopes:requestedScopes];
 }
 
 #pragma mark - Helper Methods
